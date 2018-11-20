@@ -1,3 +1,6 @@
+if _VERSION ~= "Lua 5.3" then
+    require("compat53")
+end
 local m = {} -- the module table
 
 local mt = {} -- the module metatable

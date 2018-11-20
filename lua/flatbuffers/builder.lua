@@ -1,6 +1,23 @@
 local N = require("flatbuffers.numTypes")
 local ba = require("flatbuffers.binaryarray")
-local compat = require("flatbuffers.compat")
+local getAlignSize = nil
+local compat = nil
+if type(jit) == 'table'  then
+    --Luajit has internal bit module
+    local bit = require "bit"
+    getAlignSize = function(k, size)
+        return bit.band(bit.bnot(k) + 1,(size - 1))
+    end    
+elseif _VERSION == "Lua 5.3" then
+    compat = require("flatbuffers.compat")
+    getAlignSize = compat.GetAlignSize
+else
+    -- lua 5.1 / 5.2 require bit32 module
+    local bit = require "bit32"
+    getAlignSize = function(k, size)
+        return bit.band(bit.bnot(k) + 1,(size - 1))
+    end    
+end
 
 local m = {}
 
@@ -25,7 +42,6 @@ local Float64   = N.Float64
 local MAX_BUFFER_SIZE = 0x80000000 -- 2 GB
 local VtableMetadataFields = 2
 
-local getAlignSize = compat.GetAlignSize
 
 local function vtableEqual(a, objectStart, b)
     UOffsetT:EnforceNumber(objectStart)
@@ -99,7 +115,7 @@ function mt:WriteVtable()
     while i >= 1 do
 
         local vt2Offset = self.vtables[i]
-        local vt2Start = #self.bytes - vt2Offset
+        local vt2Start = self.bytes.size - vt2Offset
         local vt2len = VOffsetT:Unpack(self.bytes, vt2Start)
 
         local metadata = VtableMetadataFields * VOffsetT.bytewidth
@@ -134,12 +150,12 @@ function mt:WriteVtable()
         vBytes = vBytes * VOffsetT.bytewidth
         self:PrependVOffsetT(vBytes)
 
-        local objectStart = #self.bytes - objectOffset
+        local objectStart = self.bytes.size - objectOffset
         self.bytes:Set(SOffsetT:Pack(self:Offset() - objectOffset),objectStart)
 
         table.insert(self.vtables, self:Offset())
     else
-        local objectStart = #self.bytes - objectOffset
+        local objectStart = self.bytes.size - objectOffset
         self.head = objectStart
         self.bytes:Set(SOffsetT:Pack(exisitingVTable - objectOffset),self.head)
     end
@@ -155,7 +171,7 @@ function mt:EndObject()
 end
 
 local function growByteBuffer(self, desiredSize)
-    local s = #self.bytes
+    local s = self.bytes.size
     assert(s < MAX_BUFFER_SIZE, "Flat Buffers cannot grow buffer beyond 2 gigabytes")
     local newsize = s
     repeat
@@ -171,7 +187,7 @@ function mt:Head()
 end
 
 function mt:Offset()
-   return #self.bytes - self.head
+   return self.bytes.size - self.head
 end
 
 function mt:Pad(n)
@@ -190,15 +206,21 @@ function mt:Prep(size, additionalBytes)
 
     local h = self.head
 
-    local k = #self.bytes - h + additionalBytes
-    local alignsize = ((~k) + 1) & (size - 1) -- getAlignSize(k, size)
+    local k = self.bytes.size - h + additionalBytes
+    local alignsize
+    if _VERSION == "Lua 5.3" then
+        alignsize = getAlignSize(k,size)
+    else 
+        local bit = require "bit32"
+        alignsize = bit.band(bit.bnot(k) + 1,(size - 1))
+    end 
 
     local desiredSize = alignsize + size + additionalBytes
 
     while self.head < desiredSize do
-        local oldBufSize = #self.bytes
+        local oldBufSize = self.bytes.size
         growByteBuffer(self, desiredSize)
-        local updatedHead = self.head + #self.bytes - oldBufSize
+        local updatedHead = self.head + self.bytes.size - oldBufSize
         self.head = updatedHead
     end
 
@@ -284,7 +306,7 @@ local function finish(self, rootTable, sizePrefix)
     self:Prep(self.minalign, prepSize)
     self:PrependUOffsetTRelative(rootTable)
     if sizePrefix then
-        local size = #self.bytes - self.head
+        local size = self.bytes.size - self.head
         Int32:EnforceNumber(size)
         self:PrependInt32(size)
     end
