@@ -207,13 +207,7 @@ function mt:Prep(size, additionalBytes)
     local h = self.head
 
     local k = self.bytes.size - h + additionalBytes
-    local alignsize
-    if _VERSION == "Lua 5.3" then
-        alignsize = getAlignSize(k,size)
-    else 
-        local bit = require "bit32"
-        alignsize = bit.band(bit.bnot(k) + 1,(size - 1))
-    end 
+    local alignsize = getAlignSize(k,size)
 
     local desiredSize = alignsize + size + additionalBytes
 
