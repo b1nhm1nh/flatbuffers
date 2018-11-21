@@ -1,6 +1,16 @@
 ![logo](http://google.github.io/flatbuffers/fpl_logo_small.png) FlatBuffers
 ===========
+This fork add Flatbuffers Lua for Luajit, Lua 5.1-5.3
 
+luajit benchmark
+built 1000000 512-byte flatbuffers in 119.90sec: 8.34/msec, 4.07MB/sec
+traversed 1000000 448-byte flatbuffers in 30.35sec: 32.95/msec, 14.08MB/sec
+
+Lua 5.3 benchmark
+built 1000000 512-byte flatbuffers in 327.48sec: 3.05/msec, 1.49MB/sec
+traversed 1000000 448-byte flatbuffers in 116.15sec: 8.61/msec, 3.68MB/sec
+
+=============
 [![Join the chat at https://gitter.im/google/flatbuffers](https://badges.gitter.im/google/flatbuffers.svg)](https://gitter.im/google/flatbuffers?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/google/flatbuffers.svg?branch=master)](https://travis-ci.org/google/flatbuffers) [![Build status](https://ci.appveyor.com/api/projects/status/yg5idd2fnusv1n10?svg=true)](https://ci.appveyor.com/project/gwvo/flatbuffers)
 
