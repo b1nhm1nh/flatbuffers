@@ -10,7 +10,7 @@ Lua 5.3 benchmark
 built 1000000 512-byte flatbuffers in 327.48sec: 3.05/msec, 1.49MB/sec
 traversed 1000000 448-byte flatbuffers in 116.15sec: 8.61/msec, 3.68MB/sec
 
-=============
+===========
 [![Join the chat at https://gitter.im/google/flatbuffers](https://badges.gitter.im/google/flatbuffers.svg)](https://gitter.im/google/flatbuffers?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/google/flatbuffers.svg?branch=master)](https://travis-ci.org/google/flatbuffers) [![Build status](https://ci.appveyor.com/api/projects/status/yg5idd2fnusv1n10?svg=true)](https://ci.appveyor.com/project/gwvo/flatbuffers)
 
